@@ -1,0 +1,5 @@
+rem %comspec% /k "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
+set OUTDIR="ObjCi386"
+if not exist %OUTDIR%\nul  mkdir "%OUTDIR%"
+cl -c /GF /nologo  -I. -Iproto -DHAVE_PATHDEF -DWIN32  -DFEAT_CSCOPE -DFEAT_TERMINAL -DFEAT_SOUND  -DFEAT_JOB_CHANNEL -DFEAT_IPV6        -DWINVER=0x0501 -D_WIN32_WINNT=0x0501  /FAcs /Fa.\ObjCi386/ /Fo.\ObjCi386/  /MP -DHAVE_STDINT_H /Ox /GL -DNDEBUG /arch:IA32 /Zl /MT /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE -DFEAT_MBYTE_IME -DDYNAMIC_IME -DDYNAMIC_ICONV -DFEAT_HUGE /Fd.\ObjCi386/ /Zi cf2html22.c
+link  /nologo /subsystem:console /DYNAMICBASE:NO /FIXED /NXCOMPAT /MACHINE:X86 /opt:ref /LTCG:STATUS oldnames.lib kernel32.lib advapi32.lib shell32.lib gdi32.lib  comdlg32.lib ole32.lib netapi32.lib uuid.lib /machine:i386   libcmt.lib  user32.lib          winmm.lib WSock32.lib Ws2_32.lib   /PDB:cf2html22.pdb -debug ObjCi386\cf2html22.obj
