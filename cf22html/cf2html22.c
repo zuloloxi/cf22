@@ -189,7 +189,7 @@ int main (int argc, char **argv) {
   printf("  </style>\n");
   w = 256;
   if (b!=0)
-      fseek(fp, (b-0)*w, SEEK_SET);
+      fseek(fp, (b-0)*w*4, SEEK_SET);
   if (fread (&t, 4, 1, fp) == 0) return 0;
   /*t = invrt(t);*/
   if ((t & 0xF ) == 0)
@@ -203,8 +203,8 @@ int main (int argc, char **argv) {
     while (w--) {
       printf("<!-- pos: %d -->", pos);
       // 
-      if ((t & 0xF) == 0)
-          t = t | 0x1;
+      //if ((t & 0xF) == 0)
+      //    t = t | 0x1;
       switch (t & 0xf) {
 		 case 14: //blue text
              char* s = bstr;

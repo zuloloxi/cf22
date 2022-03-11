@@ -1,11 +1,15 @@
 ; Charles H. Moore : invertor of colorForth, in masm, 2001 Jul 22, Public Domain
-; Jeff Fox at GreenArrays, Inc. - http://www.greenarraychips.com/home/documents/downindex.html
-; GreenArraysInc - https://www.youtube.com/user/GreenArraysInc/videos
-		;; Old Release 02b colorForth based arrayForth software  as of 10/30/2013, at                
-		;;  http://www.greenarraychips.com/home/support/index.html#software
-; colorForth for Windows By Roman Pavlyuk, 2003 plus other tools  
-		;;http://web.archive.org/web/20040725124909/http://www.geocities.com/eleks_76/
-; Howerd Oakford www.inventio.co.uk colorForth for 80x86 PC in NASM
+; Greg Bailey : President at GreenArrays, Inc - https://www.youtube.com/user/GreenArraysInc/videos
+	;; Old Release 02b colorForth based arrayForth software  as of 10/30/2013, at                
+	;; http://www.greenarraychips.com/home/support/index.html#software
+	;; http://www.greenarraychips.com/home/documents/downindex.html
+; colorForth for Windows By Roman Pavlyuk, 2003 plus other tools
+	;;http://web.archive.org/web/20040725124909/http://www.geocities.com/eleks_76/
+; Howerd Oakford : www.inventio.co.uk colorForth for 80x86 PC in NASM
+
+; In memorials to Jeff Fox , Alumni of GreenArrays 
+  
+
 ;; this is colorForth 22 for win32, in masm ml 6.1.5, ver.02/22/22   
 		 
 	; Data are addressed as 32-bit words, not bytes. 
@@ -23,7 +27,7 @@
 	; 7 edi: dword pointer to next word to be interpreted, dictionary pointer 
              ;; ( H --> : HERE ( -- a )   H @ ; )
 	; ds, es, cs - segment selector
-	; blocks.bin oeditriginally at offset 4800h (1200h * 4)
+	; blocks.bin originally at offset 4800h (1200h * 4)
 	; icons.bin  originally at offset 3000h
 
 
@@ -230,7 +234,10 @@ map_work_files:
     or     eax, eax
     jz     fail_process
     mov    [blocks_adr], eax
-
+    shr    eax, 2
+    shr    eax, 8
+    sub    eax, 12h
+    mov    offvadr,eax
     ret 
 
 ; in:  ecx - size
@@ -247,7 +254,7 @@ alloc_mem:
     
 alloc_buffers:
 ; dictionary
-    mov    ecx, 1024*1024        ; dictionary size 1 MB
+    mov    ecx, 1024*1024*1        ; dictionary size 1 MB
     call   alloc_mem      
     mov    [H], eax
 
@@ -763,6 +770,7 @@ FIND:
     ret
 
 EX1: 
+    ;xor edi,edi
     dec    words ; from keyboard
     jz     @f
     DROP
@@ -1157,7 +1165,18 @@ forth0 dd (((143o shl 4+3)shl 4+3)shl 4+2)shl 13 ; boot
        dd 0cf741200h ; qwerty
        dd 0c143c4c0h ; dlopn
        dd 0c1478e20h ; dlimp
-       
+		dd 0C8000000h ; h
+		dd  92E00000h  ; cad
+		dd 0C525C000h ; pcad
+		dd  72797400h ;itick
+		dd 0C0F0C540h ;display
+		dd  4E840000h ;ekt
+		dd 0C74E8000h  ;blk
+		dd  96237620h  ;cpoint
+		dd  96618000h  ;curs
+		dd  3B5A0840h  ;offset
+		dd 0B98E0000h  ;word
+		dd 0B98E0800h  ;words
        
 forth1 dd 2560 dup (0)
 macro2 dd offset semi
@@ -1234,6 +1253,18 @@ forth2 dd offset notimpl ; boot
        dd offset qwerty
        dd offset dlopen
        dd offset dlimp
+	   dd offset h_
+	   dd offset cad_
+	   dd offset pcad_
+	dd offset itick_
+	dd offset display_
+	dd offset ekt_
+	dd offset blk_
+	dd offset cpoint_
+	dd offset curs_
+	dd offset offset_
+	dd offset a_1word_
+	dd offset wordsn_
        dd 512 dup (0)
 
 COMMENT #
@@ -1306,10 +1337,28 @@ debug:
     mov    eax, esi
     jmp    dot
 
-iw         equ 16+6
-ih         equ 24+6
-hc         equ hp/iw ; 46
-vc         equ vp/ih ; 25
+ffw:	
+    mov ecx, [forths]              
+    push edi                                     
+    lea edi,dword ptr ds:[ecx*4+forth0-4]        
+    std                                          
+    repne scasd                                  
+    cld                                          
+    pop edi                                      
+    ret                                          
+
+itick_:
+    and eax, 0FFFFFFF0h  
+    call ffw;
+    mov eax, [ecx*4+forth2]
+    ret
+iw         equ 16+6 ; 22 
+ih         equ 24+6 ; 30
+hc         equ hp/iw ; 46 =1024/22 reminder 12    
+vc         equ vp/ih ; 25 =768/30 reminder 18 
+;			hp     equ 1024    ; horizontal size
+; 			vp     equ 768     ; vertical size
+
 ALIGN 4
 xy         dd 3*10000h+3 ; current x,y coordinate, x in high 16 bits
 lm         dd 3
@@ -1344,6 +1393,62 @@ last_: DUP_
     mov    eax, (offset last)
     shr    eax, 2
     ret
+
+h_: DUP_
+    mov    eax, (offset h)
+    shr    eax, 2
+    ret
+
+cad_: DUP_
+    mov    eax, (offset cad)
+    shr    eax, 2
+    ret
+
+pcad_: DUP_
+    mov    eax, (offset pcad)
+    shr    eax, 2
+    ret
+
+display_: DUP_
+    mov    eax, (offset display)
+    shr    eax, 2
+    ret
+
+ekt_: DUP_
+    mov    eax, (offset ekeys)
+    shr    eax, 2
+    ret
+
+blk_: DUP_
+    mov    eax, (offset blk)
+    shr    eax, 2
+    ret
+
+cpoint_: DUP_
+    mov    eax, (offset cpoint)
+    shr    eax, 2
+    ret
+
+curs_: DUP_
+    mov    eax, (offset curs)
+    shr    eax, 2
+    ret
+
+offset_: DUP_
+    mov    eax, (offset offvadr)
+    shr    eax, 2
+    ret
+	
+wordsn_: DUP_
+    mov    eax, (offset words)
+    shr    eax, 2
+    ret
+	
+COMMENT #
+nblk_: DUP_
+    mov eax,[ecx*4+forth0+4]
+    ret
+#
 
 ;; BEGIN gen.asm
 ;Generic graphics
@@ -1992,7 +2097,6 @@ chars      dd 1
 aword      dd offset EX1
 anumber    dd offset nul
 words      dd 1
-rw_no_cr   db 0
 
 nul0: 
     DROP
@@ -2304,6 +2408,7 @@ qRING:
     jz     RING
     jns    @f
     mov    pcad, edi
+	mov    cad, edi
 @@: DROP
     ret
 
@@ -2325,12 +2430,7 @@ RING:
 rW: mov    CX, word ptr xy+2
     cmp    CX, word ptr lm
     jz     @f
-	mov cl, byte ptr rw_no_cr
-	or cl,cl
-	jnz rw_cr   ; do not do a  cr  if it has been disabled by a blue  -cr  token
     call   cr
-rw_cr:
-	mov   byte ptr rw_no_cr,0 
 @@: call   RED
     jmp    TYPE_
 
@@ -2353,6 +2453,7 @@ type0:
     call   qRING
     pop    edx ; End of block
     DROP
+	;ret
     jmp    KEYBOARD
 
 Cap: 
@@ -2438,77 +2539,7 @@ siW: ;silver
 	je @f
 	mov eax, 0c0c0c0h; silver
 	jmp [bas]
-
-; *****************************************************************************
-; Blue words - formatting the editor display
-; *****************************************************************************                               
-not_cr:
-         not byte ptr rw_no_cr 
-         ret
-
-bW:   ; ( -- )    \ format the editor display screen using certain blue tokens
-    call Blue
-    call TYPE_
-    mov eax, [edi*4-4]
-    cmp eax, 9080000Eh  ; cr
-    jnz @f
-    call cr
-@@:
-    cmp eax, 0E64B8C0Eh  ; -tab
-    jnz @f
-    call not_cr
-    call space
-@@:
-    cmp eax, 25C6000Eh  ; tab
-	jnz @f
-    call space
-@@:
-    cmp eax, 0C620000Eh  ; br
-    jnz @f
-    call cr
-    call cr
-@@:
-    cmp eax, 0E721000Eh  ; -cr
-    jnz @f
-    call not_cr
-@@:
-    cmp eax, 90FB000Eh  ; cr+   cr and 3 spaces
-    jnz @f
-    call cr
-    call SPACE
-    call SPACE
-    call SPACE
-@@:
-    cmp eax, 25C7AC0Eh  ; tab3   align to next 3 space column
-    jnz @f
-    call SPACE
-@@:
-    cmp eax, 0EA00000Eh  ; .
-    jnz @f
-    call SPACE
-@@:
-    cmp eax, 0EBD4000Eh  ; ..
-    jnz @f
-    call SPACE
-    call SPACE
-@@:
-    cmp eax, 0EBD7A80Eh  ; ...
-    jnz @f
-    call SPACE
-    call SPACE
-    call SPACE
-@@:
-    cmp eax, 0EBD7AF5Eh  ; ....
-    jnz @f
-    call SPACE
-    call SPACE
-    call SPACE
-    call SPACE
-@@:
-    DROP
-    ret
-
-   
+  
 
 REFRESH: 
     call   SHOW
@@ -2528,6 +2559,7 @@ REFRESH:
 
     xor    eax, eax
     mov    pcad, edi ; for curs=0
+	mov    cad, edi
 ref1:   
     test   dword ptr [edi*4], 0fh
     jz     @f
@@ -2546,30 +2578,32 @@ ALIGN 4
 display    dd offset TYPE0, offset wW,   offset nW,  offset rW
            dd offset gW,    offset gnW,  offset gsW, offset mW
            dd offset sW,    offset text, offset Cap, offset CAPS
-           dd offset var,   offset nul,  offset bW, offset siW
+           dd offset var,   offset nul,  offset nul, offset siW
 tens       dd 10, 100, 1000, 10000, 100000, 1000000
            dd 10000000, 100000000, 1000000000
 bas        dd offset dot10
 blk        dd 18
-v_otherBlk dd 18
+o_blk      dd 18
+offvadr    dd 0
 curs       dd 0
 cad        dd 0
 pcad       dd 0
 lcad       dd 0
+cpoint     dd 0C3h
 trash      dd offset trash_adr ;;! buffer*4
 ekeys      dd offset nul, offset DEL, offset Eout, offset destack
            dd offset act1, offset act3, offset act4, offset shadow   ; y r g *
            dd offset mcur, offset mmcur, offset ppcur, offset pcur   ; l u d r
            dd offset mblk, offset actv, offset act7, offset pblk     ; - m c +
            dd offset nul, offset act11, offset act10, offset act9    ; _ S C t
-           dd offset nul, offset nul, offset nul, offset otherBlk    ; _ _ _ j
+           dd offset nul, offset nul, offset nul, offset actoblk    ; c _ _ j
 ekbd0      dd offset actA, offset actB, offset nul, offset nul ; a b _ _
            db 25o, 45o,  7 ,  0  ; x  .  i  ; chars to display on the bottom line kboard
 ekbd       db 13o,  1 , 15o, 55o ; y  r  g  *
            db 14o, 26o, 20o,  1  ; l  u  d  r
            db 43o, 11o, 12o, 53o ; -  m  c  +
            db  0 , 70o, 72o,  2  ;    S  C  t
-           db  0 ,  0 ,  0,  42o ; _  _  _  j
+           db 12o,  20o ,  16o,  42o ; c  d  f  j
            db  5 ,  23o ,0 ,  0  ; a  b  _  _
 actc       dd yellow, 0, 0ff0000h, 0c000h, 0, 0, 0ffffh
 				; 1=yellow (0xFFFF00), --, 3=red (0xFF0000),
@@ -2659,9 +2693,9 @@ shadow:
     xor    dword ptr [esi], 1
     ret
 
-otherBlk:
+actoblk:
     mov ecx, blk 
-	xchg ecx, v_otherBlk
+    xchg ecx, o_blk
     mov  blk, ecx
     ret
 				
@@ -2670,7 +2704,6 @@ E0: DROP
 
 edit: 
     mov    blk, eax
-	;mov    v_otherBlk
     DROP
 E:  DUP_
     mov    eax, blk
@@ -2696,6 +2729,11 @@ eout:
     mov    byte ptr alpha0+4*4, 0
     mov    alpha0+4, offset nul0
     mov    keyc, yellow
+    push ebx
+    mov    ebx, blk
+    mov    o_blk, ebx
+    pop ebx
+
     jmp    ACCEPT
 
 destack: 
@@ -2754,7 +2792,18 @@ insert:
     call   insert0
     mov    CL, action
     xor    [edi*4], CL
-    jmp    ACCEPT
+	cmp cl,3
+	jne    @f 
+	mov byte ptr action,4
+	mov keyc,8000ff00h ;
+;    @@: ret	
+get1word:
+    pop [aword]
+	mov [aword], offset ex1
+	ret
+a_1word_:
+	mov [aword], offset get1word ; for find word proc
+@@: jmp    ACCEPT
 
 FORMAT: 
     test   action, 12o ; ignore 3 and 9

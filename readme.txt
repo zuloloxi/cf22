@@ -1,5 +1,10 @@
 colorForth 22 for win32
 
+
+2022-03-11
+
+Added color change in editor, added blue and silver words.
+
 2022/02/22
 
 Some fixes, and the tool cf22html to convert the colorForth code to html.
